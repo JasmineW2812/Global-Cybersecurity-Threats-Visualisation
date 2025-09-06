@@ -20,7 +20,10 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       sliderInput("range","Year:",
-                  min = 2015, max= 2024, step=1, value=2014)
+                  min = 2015, max= 2024, step=1, value=2014),
+      selectInput("country", "Country:", choices = unique(Cybersecurity$Country)),
+      tableOutput("financialLoss"),
+      uiOutput("googleLink")
     ),
   
     mainPanel(
@@ -58,6 +61,27 @@ server <- function(input, output, session) {
       
     
   })
+  
+  output$financialLoss <- renderTable({
+    filtered_data() %>%
+      group_by(`Target Industry`) %>%
+      summarise(total = sum(`Financial Loss (in Million $)`, na.rm = TRUE))%>%
+                  arrange(desc(total))
+  })
+  
+  output$googleLink <-renderUI({
+    country <- input$country
+    year <- input$range
+    
+    url <- paste0("https://www.google.com/search?q=cybersecurity+attacks+", 
+                  URLencode(country), "+", year)
+    
+    tags$a(href = url, 
+           paste("🔍 Search Google for", country, "attacks in", year), 
+           target = "_blank")
+    
+  })
+  
   
 }
 
